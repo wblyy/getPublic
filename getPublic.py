@@ -3,7 +3,10 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import time
+from mydb import Ganhuo
 
+
+myweixin=Ganhuo()
 public_dict={'oIWsFtwMeHKlgc8U6rPtQWR3AOTI':'左林右狸',
 			 'oIWsFt0iI0FgrJ7s2-WLWjnka5OA':'豆瓣FM',
 			 'oIWsFt-Yeb1hMiyk9MSpENdGTI7w':'PingWest中文网',
@@ -20,7 +23,7 @@ public_dict={'oIWsFtwMeHKlgc8U6rPtQWR3AOTI':'左林右狸',
 			 'oIWsFt3nvJ2jaaxm9UOB_LUos02k':'简书',
 			 'oIWsFt5HJEgGlbxXAB2hBcmwjQho':'知乎日报',	
 			 'oIWsFtwVm9IdlPUp7LB_gVJdWZiQ':'一个',
-			 'oIWsFt6PH59ZxXbHnRYKkvLIgcCc':'共识网'
+			 'oIWsFt6PH59ZxXbHnRYKkvLIgcCc':'共识网',
 }
 
 payload = {'cb':'sogou.weixin.gzhcb',
@@ -37,9 +40,20 @@ for key in public_dict:
 		ava_url='http://mp.weixin.qq.com/s'+ava_url
 		article=requests.get(ava_url)
 		soup = BeautifulSoup(article.text)
-		#print(soup.title.string)
-		js_content=soup.find_all(id="js_content")
-		contents=re.sub(r"<[^>]*>".decode('utf-8').encode('utf-8'), '\n',str(js_content).decode('utf-8').encode('gbk','ignore'))#去除注解符
+		
+		js_content=soup.find_all(id="js_content")		
+		contents=re.sub(r"<[^>]*>".decode('utf-8').encode('utf-8'), '\n',str(js_content).decode('utf-8').encode('utf-8','ignore'))#去除注解符
 		contents=re.sub('\n\n*'.decode('utf-8').encode('utf-8'), '\n',str(contents))#撸成只有一个回车
-		print contents
-		print 'done:',public_dict[key].decode('utf-8').encode('gbk','ignore'),index
+
+		post_date=soup.find_all(id='post-date')
+		date=re.sub(r"<[^>]*>".decode('utf-8').encode('utf-8'), '',str(post_date))
+
+		#activity_name=soup.find_all(id='activity-name')
+		title=soup.title
+		#title=title.replace('<title>','')
+		#title=title.replace('</title>','')
+		#id="activity-name"
+		myweixin.insert_data(title,date,public_dict[key],str(contents))
+		#print contents,date,title
+		#print 'done:',public_dict[key].decode('utf-8').encode('gbk','ignore'),index
+#
